@@ -25,7 +25,7 @@ AFoolingArroundCharacter::AFoolingArroundCharacter()
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = true;
 	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = false;
+	bUseControllerRotationRoll = true;
 
 
 	// Configure character movement
@@ -47,8 +47,8 @@ AFoolingArroundCharacter::AFoolingArroundCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	ZoomedFOV = 65.0f;
+	ZoomingSpeed = 20;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,9 +67,9 @@ void AFoolingArroundCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AFoolingArroundCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AFoolingArroundCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &AFoolingArroundCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AFoolingArroundCharacter::LookUpAtRate);
 
 	// handle touch devices
@@ -81,6 +81,41 @@ void AFoolingArroundCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFoolingArroundCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFoolingArroundCharacter::EndCrouch );
+
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AFoolingArroundCharacter::BeginZoom);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AFoolingArroundCharacter::EndZoom);
+
+}
+
+FVector AFoolingArroundCharacter::GetPawnViewLocation() const
+{
+	if (FollowCamera)
+	{
+		return FollowCamera->GetComponentLocation();
+	}
+	// fallback if the if-clause fails
+	return Super::GetPawnViewLocation();
+}
+
+void AFoolingArroundCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	float TargetFOV = bIsZooming ? ZoomedFOV : DefaultFOV;
+
+	float NewFOV = FMath::FInterpTo(FollowCamera->FieldOfView, TargetFOV, DeltaTime, ZoomingSpeed);
+
+	FollowCamera->SetFieldOfView(NewFOV);
+}
+
+void AFoolingArroundCharacter::BeginPlay()
+{
+	
+	Super::BeginPlay();
+
+
+
+	DefaultFOV = FollowCamera->FieldOfView;
 
 }
 
@@ -98,6 +133,16 @@ void AFoolingArroundCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVect
 void AFoolingArroundCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		StopJumping();
+}
+
+void AFoolingArroundCharacter::BeginZoom()
+{
+	bIsZooming = true;
+}
+
+void AFoolingArroundCharacter::EndZoom()
+{
+	bIsZooming = false;
 }
 
 void AFoolingArroundCharacter::TurnAtRate(float Rate)

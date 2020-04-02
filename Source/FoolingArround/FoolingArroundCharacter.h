@@ -51,6 +51,21 @@ protected:
 
 	void EndCrouch();
 
+	bool bIsZooming;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
+	float ZoomingSpeed;
+
+	/*Zoomed Field of view*/
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float ZoomedFOV;
+
+	/*Default Field of view*/
+	float DefaultFOV;
+
+	void BeginZoom();
+
+	void EndZoom();
 
 	/** 
 	 * Called via input to turn at a given rate. 
@@ -80,5 +95,12 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	virtual FVector GetPawnViewLocation() const override;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void BeginPlay() override;
 };
 
