@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AFoolingArroundCharacter
@@ -22,15 +23,18 @@ AFoolingArroundCharacter::AFoolingArroundCharacter()
 	BaseLookUpRate = 45.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
+
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -54,8 +58,8 @@ void AFoolingArroundCharacter::SetupPlayerInputComponent(class UInputComponent* 
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &AFoolingArroundCharacter::Jump);
+	PlayerInputComponent->BindAction(FName("Jump"), IE_Released, this, &AFoolingArroundCharacter::EndJump);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFoolingArroundCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFoolingArroundCharacter::MoveRight);
@@ -74,6 +78,10 @@ void AFoolingArroundCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AFoolingArroundCharacter::OnResetVR);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFoolingArroundCharacter::BeginCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFoolingArroundCharacter::EndCrouch );
+
 }
 
 
@@ -131,4 +139,26 @@ void AFoolingArroundCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AFoolingArroundCharacter::Jump()
+{
+	bIsJumping = true;
+	//Jump();
+}
+
+void AFoolingArroundCharacter::EndJump()
+{
+	bIsJumping = false;
+	//StopJumping();
+}
+
+void AFoolingArroundCharacter::BeginCrouch()
+{
+	Crouch();
+}
+
+void AFoolingArroundCharacter::EndCrouch()
+{
+	UnCrouch();
 }

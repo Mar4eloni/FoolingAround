@@ -31,6 +31,9 @@ public:
 
 protected:
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsJumping;
+
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
@@ -39,6 +42,15 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	void Jump();
+
+	void EndJump();
+	
+	void BeginCrouch();
+
+	void EndCrouch();
+
 
 	/** 
 	 * Called via input to turn at a given rate. 
