@@ -12,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Weapons/SWeaponBase.h"
+#include <FoolingArround\FoolingArround.h>
 
 // Sets default values
 ASCustomCharacter::ASCustomCharacter()
@@ -53,7 +54,9 @@ ASCustomCharacter::ASCustomCharacter()
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
-	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
 	ZoomedFOV = 65.0f;
 	ZoomingSpeed = 20;
@@ -78,6 +81,8 @@ void ASCustomCharacter::BeginPlay()
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(Cast<USceneComponent>(GetMesh()), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 	}
+
+	
 }
 
 void ASCustomCharacter::OnResetVR()
@@ -137,6 +142,10 @@ void ASCustomCharacter::Fire()
 	{
 		CurrentWeapon->Fire();//(WeaponAttachSocketName, GetMesh());
 	}
+}
+
+void ASCustomCharacter::OnHealthChanged()
+{
 }
 
 void ASCustomCharacter::TurnAtRate(float Rate)

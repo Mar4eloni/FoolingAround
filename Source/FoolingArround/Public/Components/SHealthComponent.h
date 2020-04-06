@@ -6,7 +6,11 @@
 #include "Components/ActorComponent.h"
 #include "SHealthComponent.generated.h"
 
+
 class AController;
+
+// On Health Change Event
+//DECLARE_MULTICAST_DELEGATE_SixParams(FOnHealthChangeSignature, USHealthComponent*, HealthComp, float, Health, float, HealthDelta, const class UDamageType*, DamageType, AController*, InstigatedBy, AActor*, DamageCauser);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FOOLINGARROUND_API USHealthComponent : public UActorComponent
@@ -29,4 +33,10 @@ protected:
 	
 	UFUNCTION()
 	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+public:
+
+	/*UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHealthChangeSignature* OnHealthChanged;*/
+
 };

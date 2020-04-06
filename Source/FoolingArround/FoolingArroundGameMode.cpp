@@ -1,7 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "FoolingArroundGameMode.h"
-#include "FoolingArroundCharacter.h"
+#include "Character/SCustomCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AFoolingArroundGameMode::AFoolingArroundGameMode()
