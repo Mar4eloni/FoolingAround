@@ -6,10 +6,12 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Weapons/SWeaponBase.h"
 
 // Sets default values
 ASCustomCharacter::ASCustomCharacter()
@@ -49,8 +51,14 @@ ASCustomCharacter::ASCustomCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
 	ZoomedFOV = 65.0f;
 	ZoomingSpeed = 20;
+
+	WeaponAttachSocketName = "WeaponSocket";
 
 }
 
@@ -60,6 +68,16 @@ void ASCustomCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DefaultFOV = FollowCamera->FieldOfView;
+
+	//Spawn a default weapon
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	CurrentWeapon = GetWorld()->SpawnActor<ASWeaponBase>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetOwner(this);
+		CurrentWeapon->AttachToComponent(Cast<USceneComponent>(GetMesh()), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	}
 }
 
 void ASCustomCharacter::OnResetVR()
@@ -111,6 +129,14 @@ void ASCustomCharacter::BeginZoom()
 void ASCustomCharacter::EndZoom()
 {
 	bIsZooming = false;
+}
+
+void ASCustomCharacter::Fire()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();//(WeaponAttachSocketName, GetMesh());
+	}
 }
 
 void ASCustomCharacter::TurnAtRate(float Rate)
@@ -171,13 +197,16 @@ void ASCustomCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASCustomCharacter::BeginZoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ASCustomCharacter::EndZoom);
 
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCustomCharacter::Fire);
+
 }
 
 FVector ASCustomCharacter::GetPawnViewLocation() const
 {
 	if (FollowCamera)
 	{
-		return FollowCamera->GetComponentLocation();
+		//return FollowCamera->GetComponentLocation();
+		return GetMesh()->GetSocketLocation(WeaponAttachSocketName);
 	}
 	// fallback if the if-clause fails
 	return Super::GetPawnViewLocation();

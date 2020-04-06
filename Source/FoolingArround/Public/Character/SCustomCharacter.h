@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "SCustomCharacter.generated.h"
 
+
+
 UCLASS()
 class FOOLINGARROUND_API ASCustomCharacter : public ACharacter
 {
@@ -69,6 +71,16 @@ protected:
 	void BeginZoom();
 
 	void EndZoom();
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
+	FName WeaponAttachSocketName;
+
+	class ASWeaponBase* CurrentWeapon; 
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeaponBase> StarterWeaponClass;
+
+	void Fire();
 
 	/**
 	 * Called via input to turn at a given rate.
