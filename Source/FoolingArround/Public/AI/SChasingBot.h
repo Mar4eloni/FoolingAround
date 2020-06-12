@@ -24,6 +24,17 @@ protected:
 
 	FVector FindNextPathPoint();
 
+	FVector NextPathPoint;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ChasingBot")
+	float MovmentForce;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ChasingBot")
+	bool bUseVelocityChange;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ChasingBot")
+	float RequiredDistanceToTarget;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -56,7 +56,7 @@ ASCustomCharacter::ASCustomCharacter()
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
-	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	//HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
 	ZoomedFOV = 65.0f;
 	ZoomingSpeed = 20;
@@ -82,7 +82,7 @@ void ASCustomCharacter::BeginPlay()
 		CurrentWeapon->AttachToComponent(Cast<USceneComponent>(GetMesh()), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 	}
 
-	
+	//HealthComp->
 }
 
 void ASCustomCharacter::OnResetVR()

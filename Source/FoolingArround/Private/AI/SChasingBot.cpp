@@ -17,6 +17,11 @@ ASChasingBot::ASChasingBot()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
 	MeshComp->SetCanEverAffectNavigation(false); // bCanEverAffectNavigation = false;
+	MeshComp->SetSimulatePhysics(true);
+
+	bUseVelocityChange = false;
+	MovmentForce = 1000;
+	RequiredDistanceToTarget = 100;
 }
 
 // Called when the game starts or when spawned
@@ -24,36 +29,44 @@ void ASChasingBot::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	NextPathPoint = FindNextPathPoint();
 }
-
-//FVector ASChasingBot::FindNextPathPoint()
-//{
-//	ACharacter* PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
-//	//UNavigationSystemBase:
-//	//PlayerPawn->getactor
-//	
-//	//UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
-//
-//	//if (NavPath->PathPoints.Num() > 1)
-//	//{
-//	//	//Return next point in path
-//	//	return NavPath->PathPoints[1];
-//	//}
-//	//// if failed to find path
-//	//return GetActorLocation();
-//	return new FVector();
-//}
 
 FVector ASChasingBot::FindNextPathPoint()
 {
-	return FVector();
+	ACharacter* PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
+	
+	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
+
+	if (NavPath->PathPoints.Num() > 1)
+	{
+		//Return next point in path
+		return NavPath->PathPoints[1];
+	}
+	// if failed to find path
+	return GetActorLocation();
 }
+
 
 // Called every frame
 void ASChasingBot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
+
+	if (DistanceToTarget <= RequiredDistanceToTarget)
+	{
+		NextPathPoint - GetActorLocation();
+	}
+	else
+	{
+		FVector ForceDirection = NextPathPoint - GetActorLocation();
+		ForceDirection.Normalize();
+		ForceDirection *= MovmentForce;
+
+		MeshComp->AddForce(ForceDirection, NAME_None, bUseVelocityChange);
+	}
 }
 
 // Called to bind functionality to input
